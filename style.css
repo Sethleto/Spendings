@@ -10,23 +10,29 @@
   --danger-bg: #450a0a;
   --danger-border: #ef4444;
   --danger-text: #fca5a5;
+  color-scheme: dark;
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   background: var(--bg);
   color: var(--text);
-  padding: 20px;
+  padding: 16px 14px 40px;
   line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
 }
 
 .container {
   max-width: 1100px;
   margin: 0 auto;
   display: grid;
-  gap: 24px;
+  gap: 18px;
 }
 
 header {
@@ -36,45 +42,82 @@ header {
   align-items: center;
   gap: 12px;
   border-bottom: 1px solid var(--border);
-  padding-bottom: 16px;
+  padding-bottom: 14px;
 }
 
-header h1 { font-size: 1.5rem; }
-header p { color: var(--muted); font-size: 0.9rem; }
+header h1 {
+  font-size: 1.45rem;
+}
+
+header p {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
 
 .header-actions {
   display: flex;
   gap: 8px;
-  flex-wrap: wrap;
+  width: 100%;
+}
+
+.header-actions button {
+  flex: 1;
 }
 
 button {
   cursor: pointer;
   border: none;
-  border-radius: 6px;
-  padding: 8px 14px;
-  font-size: 0.9rem;
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 0.95rem;
   font-weight: 600;
   transition: 0.15s ease;
+  touch-action: manipulation;
 }
 
-.btn-primary { background: var(--accent); color: #0f172a; }
-.btn-primary:hover { background: var(--accent-hover); color: #fff; }
+.btn-primary {
+  background: var(--accent);
+  color: #0f172a;
+}
+.btn-primary:hover {
+  background: var(--accent-hover);
+  color: #fff;
+}
 
-.btn-secondary { background: var(--card); color: var(--text); border: 1px solid var(--border); }
-.btn-secondary:hover { background: var(--card-hover); }
+.btn-secondary {
+  background: var(--card);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.btn-secondary:hover {
+  background: var(--card-hover);
+}
 
-.btn-danger { background: #dc2626; color: #fff; padding: 5px 10px; font-size: 0.8rem; }
-.btn-danger:hover { background: #b91c1c; }
+.btn-danger {
+  background: #dc2626;
+  color: #fff;
+  padding: 6px 10px;
+  font-size: 0.82rem;
+}
+.btn-danger:hover {
+  background: #b91c1c;
+}
 
-.btn-edit { background: #475569; color: #fff; padding: 5px 10px; font-size: 0.8rem; }
-.btn-edit:hover { background: #64748b; }
+.btn-edit {
+  background: #475569;
+  color: #fff;
+  padding: 6px 10px;
+  font-size: 0.82rem;
+}
+.btn-edit:hover {
+  background: #64748b;
+}
 
 .btn-icon-del {
   background: transparent;
   color: var(--muted);
-  padding: 2px 6px;
-  font-size: 0.8rem;
+  padding: 4px 8px;
+  font-size: 0.85rem;
   border: 1px solid transparent;
 }
 .btn-icon-del:hover {
@@ -86,18 +129,18 @@ button {
 /* Summary Grid */
 .summary-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
 }
 
 .cat-card {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 16px;
+  border-radius: 12px;
+  padding: 15px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .cat-header {
@@ -122,10 +165,12 @@ button {
   flex-shrink: 0;
 }
 
-.cat-header h2 { font-size: 1.1rem; }
+.cat-header h2 {
+  font-size: 1.1rem;
+}
 
 .period-box {
-  background: rgba(15, 23, 42, 0.6);
+  background: rgba(15, 23, 42, 0.65);
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 10px 12px;
@@ -155,7 +200,7 @@ button {
 .period-amounts {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: center;
   gap: 8px;
 }
 
@@ -177,13 +222,13 @@ button {
 }
 
 .limit-control input {
-  width: 78px;
-  padding: 4px 6px;
+  width: 84px;
+  padding: 6px 8px;
   background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 4px;
+  border-radius: 6px;
   color: var(--text);
-  font-size: 0.85rem;
+  font-size: 16px; /* Prevents iOS auto-zoom */
   text-align: right;
 }
 
@@ -206,8 +251,8 @@ button {
 .panel {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 18px;
+  border-radius: 12px;
+  padding: 16px;
 }
 
 .panel h3 {
@@ -217,7 +262,7 @@ button {
 
 form.entry-form {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 12px;
   align-items: end;
 }
@@ -230,8 +275,7 @@ form.category-form {
 }
 
 form.category-form .field {
-  flex: 1;
-  min-width: 200px;
+  flex: 1 1 200px;
 }
 
 form.category-form .field-color {
@@ -242,32 +286,60 @@ form.category-form .field-color {
   display: flex;
   flex-direction: column;
   gap: 5px;
+  min-width: 0;
 }
 
 .field label {
-  font-size: 0.8rem;
+  font-size: 0.82rem;
   color: var(--muted);
 }
 
-.field input, .field select {
-  padding: 9px 10px;
+/* 16px font-size + min-height fixes iOS Safari zoom and invisible date/select text */
+.field input,
+.field select,
+.filters select {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
   background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 8px;
   color: var(--text);
-  font-size: 0.95rem;
+  font-size: 16px;
+  font-family: inherit;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.field select,
+.filters select {
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://w3.org' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 16px;
+  padding-right: 32px;
+}
+
+.field input[type="date"] {
+  display: block;
+  min-width: 0;
 }
 
 .field input[type="color"] {
-  padding: 3px;
-  width: 48px;
-  height: 39px;
+  padding: 4px;
+  width: 52px;
+  height: 44px;
   cursor: pointer;
 }
 
 .form-buttons {
   display: flex;
   gap: 8px;
+}
+
+.form-buttons button {
+  flex: 1;
+  min-height: 44px;
 }
 
 .custom-cat-list {
@@ -282,7 +354,7 @@ form.category-form .field-color {
 .cat-chip {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   background: var(--bg);
   border: 1px solid var(--border);
   padding: 5px 10px;
@@ -303,42 +375,47 @@ form.category-form .field-color {
 .filters {
   display: flex;
   gap: 8px;
-  flex-wrap: wrap;
+  width: 100%;
 }
 
 .filters select {
-  padding: 6px 10px;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  color: var(--text);
-  font-size: 0.85rem;
+  flex: 1;
 }
 
 .table-wrap {
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.92rem;
+  font-size: 0.9rem;
 }
 
-th, td {
+th,
+td {
   text-align: left;
-  padding: 10px 12px;
+  padding: 10px 8px;
   border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+td:nth-child(3) {
+  white-space: normal;
+  min-width: 120px;
 }
 
 th {
   color: var(--muted);
   font-weight: 600;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
 }
 
-tr:hover td { background: rgba(255, 255, 255, 0.02); }
+tr:hover td {
+  background: rgba(255, 255, 255, 0.02);
+}
 
 .cat-pill {
   display: inline-block;
@@ -358,4 +435,53 @@ tr:hover td { background: rgba(255, 255, 255, 0.02); }
   text-align: center;
   color: var(--muted);
   padding: 24px;
+  white-space: normal;
+}
+
+/* Desktop & Tablet Overrides */
+@media (min-width: 640px) {
+  body {
+    padding: 20px;
+  }
+
+  .header-actions {
+    width: auto;
+  }
+
+  .header-actions button {
+    flex: initial;
+  }
+
+  .filters {
+    width: auto;
+  }
+
+  .filters select {
+    width: auto;
+    min-height: 38px;
+    padding: 6px 30px 6px 10px;
+    font-size: 0.88rem;
+  }
+
+  th,
+  td {
+    padding: 10px 12px;
+  }
+}
+
+/* Small Phone Layout */
+@media (max-width: 480px) {
+  form.entry-form {
+    grid-template-columns: 1fr;
+  }
+
+  form.category-form {
+    display: grid;
+    grid-template-columns: 1fr auto;
+  }
+
+  form.category-form button {
+    grid-column: 1 / -1;
+    min-height: 44px;
+  }
 }
