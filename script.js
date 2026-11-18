@@ -16,7 +16,8 @@ function loadFromStorage(key, fallback) {
     if (!raw) return fallback;
     const parsed = JSON.parse(raw);
     return parsed !== null && parsed !== undefined ? parsed : fallback;
-  } catch {
+  } catch (err) {
+    console.warn('Storage read failed for', key, err);
     return fallback;
   }
 }
@@ -34,15 +35,10 @@ if (typeof limits !== 'object' || limits === null || Array.isArray(limits)) {
   limits = {};
 }
 
-let activeCardPeriod = {};
-
 function syncLimitsStructure() {
   categories.forEach(cat => {
     if (!limits[cat.key]) {
       limits[cat.key] = { week: 0, month: 0, year: 0 };
-    }
-    if (!activeCardPeriod[cat.key]) {
-      activeCardPeriod[cat.key] = 'week';
     }
   });
 }
@@ -52,8 +48,8 @@ function saveState() {
     localStorage.setItem(STORAGE_CATEGORIES, JSON.stringify(categories));
     localStorage.setItem(STORAGE_ENTRIES, JSON.stringify(entries));
     localStorage.setItem(STORAGE_LIMITS, JSON.stringify(limits));
-  } catch {
-    alert('Could not save to browser storage. Make sure Private Browsing is off.');
+  } catch (err) {
+    alert('Could not save to browser storage. Make sure Private Browsing is turned off.');
   }
 }
 
@@ -81,39 +77,6 @@ function getStartOfWeek(date) {
   const diff = (day === 0 ? -6 : 1 - day);
   d.setDate(d.getDate() + diff);
   return d;
-}
-
-function getPeriodLabels(now) {
-  const start = getStartOfWeek(now);
-  const end = new Date(start);
-  end.setDate(start.getDate() + 6);
-
-  const fmtShort = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' });
-  const monthLong = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(now);
-  const monthShort = new Intl.DateTimeFormat('en-US', { month: 'short' }).format(now);
-  const yearStr = String(now.getFullYear());
-
-  return {
-    week: `This Week (${fmtShort.format(start)}–${fmtShort.format(end)})`,
-    month: monthLong,
-    monthShort: monthShort,
-    year: yearStr
-  };
-}
-function updateLogPeriodDropdown() {
-  const labels = getPeriodLabels(new Date());
-  const filterPeriod = document.getElementById('filterPeriod');
-  if (!filterPeriod) return;
-  const current = filterPeriod.value;
-  filterPeriod.innerHTML = `
-    <option value="all">All Time</option>
-    <option value="week">${labels.week}</option>
-    <option value="month">${labels.month}</option>
-    <option value="year">${labels.year}</option>
-  `;
-  if (['all', 'week', 'month', 'year'].includes(current)) {
-    filterPeriod.value = current;
-  }
 }
 
 function isSameWeek(entryDate, now) {
@@ -150,11 +113,6 @@ function getPillStyle(color) {
   return `background: ${hexToRgba(c, 0.16)}; color: ${c}; border-color: ${hexToRgba(c, 0.35)};`;
 }
 
-function changeCardPeriod(catKey, period) {
-  activeCardPeriod[catKey] = period;
-  renderSummary();
-}
-
 function updateLimit(catKey, period, value) {
   const parsed = parseFloat(value);
   if (!limits[catKey]) limits[catKey] = { week: 0, month: 0, year: 0 };
@@ -184,7 +142,6 @@ function handleAddCategory(e) {
   const key = 'cat_' + Date.now();
   categories.push({ key, label, color });
   limits[key] = { week: 0, month: 0, year: 0 };
-  activeCardPeriod[key] = 'week';
 
   saveState();
   colorInput.value = COLOR_PALETTE[categories.length % COLOR_PALETTE.length];
@@ -211,10 +168,10 @@ function deleteCategory(catKey) {
 
   categories = categories.filter(c => c.key !== catKey);
   delete limits[catKey];
-  delete activeCardPeriod[catKey];
   saveState();
   render();
 }
+
 
 function renderCategorySelects() {
   const entrySelect = document.getElementById('entryCategory');
@@ -246,9 +203,9 @@ function renderCategorySelects() {
     </div>
   `).join('');
 }
+
 function renderSummary() {
   const now = new Date();
-  const labels = getPeriodLabels(now);
   const grid = document.getElementById('summaryGrid');
   grid.innerHTML = '';
 
@@ -271,19 +228,43 @@ function renderSummary() {
       }
     });
 
-    const totalsMap = { week: weekTotal, month: monthTotal, year: yearTotal };
-    const catLimits = limits[cat.key] || { week: 0, month: 0, year: 0 };
-
-    const monthOver = catLimits.month > 0 && monthTotal > catLimits.month;
-    const yearOver = catLimits.year > 0 && yearTotal > catLimits.year;
-
-    const selectedPeriod = activeCardPeriod[cat.key] || 'week';
-    const selectedTotal = totalsMap[selectedPeriod] || 0;
-    const selectedLimit = catLimits[selectedPeriod] || 0;
-    const isRowOver = selectedLimit > 0 && selectedTotal > selectedLimit;
+    const periods = [
+      { key: 'week', label: 'This Week', total: weekTotal },
+      { key: 'month', label: 'This Month', total: monthTotal },
+      { key: 'year', label: 'This Year', total: yearTotal }
+    ];
 
     const card = document.createElement('div');
     card.className = 'cat-card';
+
+    let periodsHTML = periods.map(p => {
+      const limitVal = limits[cat.key]?.[p.key] || 0;
+      const isOver = limitVal > 0 && p.total > limitVal;
+
+      return `
+        <div class="period-box ${isOver ? 'over-limit' : ''}">
+          <div class="period-top">
+            <span>${p.label}</span>
+            ${isOver ? '<span class="badge-over">Over Limit</span>' : ''}
+          </div>
+          <div class="period-amounts">
+            <span class="spent-val">${formatMoney(p.total)}</span>
+            <div class="limit-control">
+              <span>Limit: $</span>
+              <input
+                type="number"
+                inputmode="decimal"
+                step="1"
+                min="0"
+                value="${limitVal || ''}"
+                placeholder="None"
+                onchange="updateLimit('${cat.key}', '${p.key}', this.value)"
+              />
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('');
 
     card.innerHTML = `
       <div class="cat-header">
@@ -291,41 +272,9 @@ function renderSummary() {
           <span class="cat-dot" style="background:${cat.color}"></span>
           <h2>${escapeHTML(cat.label)}</h2>
         </div>
-        <div class="cat-inline-totals">
-          <span class="mini-stat ${monthOver ? 'over-limit' : ''}">
-            ${labels.monthShort}: <strong>${formatMoney(monthTotal)}</strong>
-          </span>
-          <span class="mini-stat ${yearOver ? 'over-limit' : ''}">
-            ${labels.year}: <strong>${formatMoney(yearTotal)}</strong>
-          </span>
-        </div>
         <button type="button" class="btn-icon-del" title="Delete category" onclick="deleteCategory('${cat.key}')">✕</button>
       </div>
-
-      <div class="single-period-row ${isRowOver ? 'over-limit' : ''}">
-        <select class="period-select" onchange="changeCardPeriod('${cat.key}', this.value)">
-          <option value="week" ${selectedPeriod === 'week' ? 'selected' : ''}>${labels.week}</option>
-          <option value="month" ${selectedPeriod === 'month' ? 'selected' : ''}>${labels.month}</option>
-          <option value="year" ${selectedPeriod === 'year' ? 'selected' : ''}>${labels.year}</option>
-        </select>
-
-        <div class="row-metrics">
-          ${isRowOver ? '<span class="badge-over">Over</span>' : ''}
-          <span class="spent-val">${formatMoney(selectedTotal)}</span>
-          <div class="limit-control">
-            <span>Limit $</span>
-            <input
-              type="number"
-              inputmode="decimal"
-              step="1"
-              min="0"
-              value="${selectedLimit || ''}"
-              placeholder="None"
-              onchange="updateLimit('${cat.key}', '${selectedPeriod}', this.value)"
-            />
-          </div>
-        </div>
-      </div>
+      ${periodsHTML}
     `;
 
     grid.appendChild(card);
@@ -480,10 +429,17 @@ function importData(event) {
 }
 
 function render() {
-  updateLogPeriodDropdown();
   renderCategorySelects();
   renderSummary();
   renderLog();
 }
+
+window.addEventListener('storage', function() {
+  categories = loadFromStorage(STORAGE_CATEGORIES, DEFAULT_CATEGORIES);
+  entries = loadFromStorage(STORAGE_ENTRIES, []);
+  limits = loadFromStorage(STORAGE_LIMITS, {});
+  syncLimitsStructure();
+  render();
+});
 
 render();
