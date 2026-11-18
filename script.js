@@ -34,7 +34,6 @@ if (typeof limits !== 'object' || limits === null || Array.isArray(limits)) {
   limits = {};
 }
 
-// Tracks which period ('week', 'month', or 'year') is selected in each category card dropdown
 let activeCardPeriod = {};
 
 function syncLimitsStructure() {
@@ -43,7 +42,7 @@ function syncLimitsStructure() {
       limits[cat.key] = { week: 0, month: 0, year: 0 };
     }
     if (!activeCardPeriod[cat.key]) {
-      activeCardPeriod[cat.key] = 'month';
+      activeCardPeriod[cat.key] = 'week';
     }
   });
 }
@@ -84,10 +83,6 @@ function getStartOfWeek(date) {
   return d;
 }
 
-// Returns dynamic labels like:
-// week: "This Week (Nov 16 – Nov 22)"
-// month: "November 2026" (and short "Nov 2026")
-// year: "2026"
 function getPeriodLabels(now) {
   const start = getStartOfWeek(now);
   const end = new Date(start);
@@ -95,11 +90,11 @@ function getPeriodLabels(now) {
 
   const fmtShort = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' });
   const monthLong = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(now);
-  const monthShort = new Intl.DateTimeFormat('en-US', { month: 'short', year: 'numeric' }).format(now);
+  const monthShort = new Intl.DateTimeFormat('en-US', { month: 'short' }).format(now);
   const yearStr = String(now.getFullYear());
 
   return {
-    week: `This Week (${fmtShort.format(start)} – ${fmtShort.format(end)})`,
+    week: `This Week (${fmtShort.format(start)}–${fmtShort.format(end)})`,
     month: monthLong,
     monthShort: monthShort,
     year: yearStr
@@ -189,7 +184,7 @@ function handleAddCategory(e) {
   const key = 'cat_' + Date.now();
   categories.push({ key, label, color });
   limits[key] = { week: 0, month: 0, year: 0 };
-  activeCardPeriod[key] = 'month';
+  activeCardPeriod[key] = 'week';
 
   saveState();
   colorInput.value = COLOR_PALETTE[categories.length % COLOR_PALETTE.length];
@@ -283,7 +278,7 @@ function renderSummary() {
     const monthOver = catLimits.month > 0 && monthTotal > catLimits.month;
     const yearOver = catLimits.year > 0 && yearTotal > catLimits.year;
 
-    const selectedPeriod = activeCardPeriod[cat.key] || 'month';
+    const selectedPeriod = activeCardPeriod[cat.key] || 'week';
     const selectedTotal = totalsMap[selectedPeriod] || 0;
     const selectedLimit = catLimits[selectedPeriod] || 0;
     const isRowOver = selectedLimit > 0 && selectedTotal > selectedLimit;
@@ -293,19 +288,17 @@ function renderSummary() {
 
     card.innerHTML = `
       <div class="cat-header">
-        <div class="cat-title-group">
-          <div class="cat-header-left">
-            <span class="cat-dot" style="background:${cat.color}"></span>
-            <h2>${escapeHTML(cat.label)}</h2>
-          </div>
-          <div class="cat-inline-totals">
-            <span class="mini-stat ${monthOver ? 'over-limit' : ''}">
-              ${labels.monthShort}: <strong>${formatMoney(monthTotal)}</strong>
-            </span>
-            <span class="mini-stat ${yearOver ? 'over-limit' : ''}">
-              ${labels.year}: <strong>${formatMoney(yearTotal)}</strong>
-            </span>
-          </div>
+        <div class="cat-header-left">
+          <span class="cat-dot" style="background:${cat.color}"></span>
+          <h2>${escapeHTML(cat.label)}</h2>
+        </div>
+        <div class="cat-inline-totals">
+          <span class="mini-stat ${monthOver ? 'over-limit' : ''}">
+            ${labels.monthShort}: <strong>${formatMoney(monthTotal)}</strong>
+          </span>
+          <span class="mini-stat ${yearOver ? 'over-limit' : ''}">
+            ${labels.year}: <strong>${formatMoney(yearTotal)}</strong>
+          </span>
         </div>
         <button type="button" class="btn-icon-del" title="Delete category" onclick="deleteCategory('${cat.key}')">✕</button>
       </div>
@@ -445,7 +438,7 @@ function deleteEntry(id) {
 
 function resetForm() {
   document.getElementById('entryForm').reset();
-document.getElementById('editId').value = '';
+  document.getElementById('editId').value = '';
 document.getElementById('entryDate').value = getTodayString();
 document.getElementById('formTitle').textContent = 'Add New Spending Entry';
 document.getElementById('submitBtn').textContent = 'Add Entry';
@@ -462,7 +455,7 @@ a.click();
 URL.revokeObjectURL(url);
 }
 function importData(event) {
-const file = event.target.files;
+const file = event.target.files[0];
 if (!file) return;
 const reader = new FileReader();
 reader.onload = function(e) {
