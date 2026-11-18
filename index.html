@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <title>Personal Spending Log</title>
-  <link rel="stylesheet" href="style.css?v=6" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="container">
@@ -39,7 +38,7 @@
         </div>
         <div class="field">
           <label for="entryAmount">Amount ($)</label>
-          <input type="number" id="entryAmount" inputmode="decimal" step="0.01" min="0.01" placeholder="0.00" required />
+          <input type="number" id="entryAmount" step="0.01" min="0.01" placeholder="0.00" required />
         </div>
         <div class="field">
           <label for="entryNote">Note (Optional)</label>
@@ -75,7 +74,12 @@
         <h3>Spending Log (<span id="filteredTotal">$0.00</span>)</h3>
         <div class="filters">
           <select id="filterCategory" onchange="renderLog()"></select>
-          <select id="filterPeriod" onchange="renderLog()"></select>
+          <select id="filterPeriod" onchange="renderLog()">
+            <option value="all">All Time</option>
+            <option value="week">This Week (Mon–Sun)</option>
+            <option value="month">This Month</option>
+            <option value="year">This Year</option>
+          </select>
         </div>
       </div>
 
@@ -96,6 +100,6 @@
     </section>
   </div>
 
-  <script src="script.js?v=6"></script>
+  <script src="script.js"></script>
 </body>
 </html>
