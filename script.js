@@ -58,8 +58,10 @@ saveState();
 
 function getTodayString() {
   const now = new Date();
-  const offset = now.getTimezoneOffset() * 60000;
-  return new Date(now - offset).toISOString().split('T')[0];
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 document.getElementById('entryDate').value = getTodayString();
@@ -119,14 +121,17 @@ function updateLimit(catKey, period, value) {
   renderSummary();
 }
 
-document.getElementById('categoryForm').addEventListener('submit', function(e) {
-  e.preventDefault();
+function handleAddCategory(e) {
+  if (e) e.preventDefault();
   const nameInput = document.getElementById('newCatName');
   const colorInput = document.getElementById('newCatColor');
   const label = nameInput.value.trim();
-  const color = colorInput.value;
+  const color = colorInput.value || '#a855f7';
 
-  if (!label) return;
+  if (!label) {
+    alert('Please type a category name first.');
+    return;
+  }
 
   const exists = categories.some(c => c.label.toLowerCase() === label.toLowerCase());
   if (exists) {
@@ -143,7 +148,9 @@ document.getElementById('categoryForm').addEventListener('submit', function(e) {
   nameInput.value = '';
   render();
   document.getElementById('entryCategory').value = key;
-});
+}
+
+document.getElementById('categoryForm').addEventListener('submit', handleAddCategory);
 
 function deleteCategory(catKey) {
   if (categories.length <= 1) {
