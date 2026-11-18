@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Personal Spending Log</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <h1>Spending Tracker</h1>
+        <p>Track spendings across default and custom categories with weekly, monthly, and yearly limits.</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn-secondary" onclick="exportData()">Export Backup</button>
+        <button class="btn-secondary" onclick="document.getElementById('importFile').click()">Import Backup</button>
+        <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)" />
+      </div>
+    </header>
+
+    <!-- Category Totals & Limits -->
+    <section class="summary-grid" id="summaryGrid"></section>
+
+    <!-- Add / Edit Entry Form -->
+    <section class="panel">
+      <h3 id="formTitle">Add New Spending Entry</h3>
+      <form class="entry-form" id="entryForm">
+        <input type="hidden" id="editId" />
+        <div class="field">
+          <label for="entryDate">Date</label>
+          <input type="date" id="entryDate" required />
+        </div>
+        <div class="field">
+          <label for="entryCategory">Category</label>
+          <select id="entryCategory" required></select>
+        </div>
+        <div class="field">
+          <label for="entryAmount">Amount ($)</label>
+          <input type="number" id="entryAmount" step="0.01" min="0.01" placeholder="0.00" required />
+        </div>
+        <div class="field">
+          <label for="entryNote">Note (Optional)</label>
+          <input type="text" id="entryNote" placeholder="e.g., Ride to work, transfer..." />
+        </div>
+        <div class="form-buttons">
+          <button type="submit" class="btn-primary" id="submitBtn">Add Entry</button>
+          <button type="button" class="btn-secondary" id="cancelEditBtn" style="display:none" onclick="resetForm()">Cancel</button>
+        </div>
+      </form>
+    </section>
+
+    <!-- Manage Categories -->
+    <section class="panel">
+      <h3>Manage Categories</h3>
+      <form class="category-form" id="categoryForm">
+        <div class="field">
+          <label for="newCatName">New Category Name</label>
+          <input type="text" id="newCatName" placeholder="e.g., Coffee, Groceries, Cats..." maxlength="30" required />
+        </div>
+        <div class="field field-color">
+          <label for="newCatColor">Color</label>
+          <input type="color" id="newCatColor" value="#a855f7" />
+        </div>
+        <button type="submit" class="btn-primary">+ Add Category</button>
+      </form>
+      <div class="custom-cat-list" id="categoryChips"></div>
+    </section>
+
+    <!-- Transaction Log -->
+    <section class="panel">
+      <div class="log-controls">
+        <h3>Spending Log (<span id="filteredTotal">$0.00</span>)</h3>
+        <div class="filters">
+          <select id="filterCategory" onchange="renderLog()"></select>
+          <select id="filterPeriod" onchange="renderLog()">
+            <option value="all">All Time</option>
+            <option value="week">This Week (Mon–Sun)</option>
+            <option value="month">This Month</option>
+            <option value="year">This Year</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Category</th>
+              <th>Note</th>
+              <th>Amount</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="logBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
