@@ -92,7 +92,6 @@ function updateLimit(catKey, period, value) {
   renderSummary();
 }
 
-// Add New Custom Category
 document.getElementById('categoryForm').addEventListener('submit', function(e) {
   e.preventDefault();
   const nameInput = document.getElementById('newCatName');
@@ -112,8 +111,7 @@ document.getElementById('categoryForm').addEventListener('submit', function(e) {
   categories.push({ key, label, color });
   limits[key] = { week: 0, month: 0, year: 0 };
 
-  const nextColor = COLOR_PALETTE[categories.length % COLOR_PALETTE.length];
-  colorInput.value = nextColor;
+  colorInput.value = COLOR_PALETTE[categories.length % COLOR_PALETTE.length];
   nameInput.value = '';
 
   saveState();
@@ -139,6 +137,7 @@ function deleteCategory(catKey) {
   saveState();
   render();
 }
+
 
 function renderCategorySelects() {
   const entrySelect = document.getElementById('entryCategory');
@@ -220,6 +219,7 @@ function renderSummary() {
               <span>Limit: $</span>
               <input
                 type="number"
+                inputmode="decimal"
                 step="1"
                 min="0"
                 value="${limitVal || ''}"
@@ -303,95 +303,101 @@ document.getElementById('entryForm').addEventListener('submit', function(e) {
   const editId = document.getElementById('editId').value;
   const date = document.getElementById('entryDate').value;
   const category = document.getElementById('entryCategory').value;
-const amount = parseFloat(document.getElementById('entryAmount').value);
-const note = document.getElementById('entryNote').value.trim();
-if (!date || !category || isNaN(amount) || amount <= 0) return;
-if (editId) {
-const idx = entries.findIndex(item => item.id === Number(editId));
-if (idx !== -1) {
-entries[idx] = { ...entries[idx], date, category, amount, note };
-}
-} else {
-entries.push({
-id: Date.now(),
-date,
-category,
-amount,
-note
+  const amount = parseFloat(document.getElementById('entryAmount').value);
+  const note = document.getElementById('entryNote').value.trim();
+
+  if (!date || !category || isNaN(amount) || amount <= 0) return;
+
+  if (editId) {
+    const idx = entries.findIndex(item => item.id === Number(editId));
+    if (idx !== -1) {
+      entries[idx] = { ...entries[idx], date, category, amount, note };
+    }
+  } else {
+    entries.push({ id: Date.now(), date, category, amount, note });
+  }
+
+  saveState();
+  resetForm();
+  render();
 });
-}
-saveState();
-resetForm();
-render();
-});
+
 function editEntry(id) {
-const item = entries.find(e => e.id === id);
-if (!item) return;
-document.getElementById('editId').value = item.id;
-document.getElementById('entryDate').value = item.date;
-if (categories.some(c => c.key === item.category)) {
-document.getElementById('entryCategory').value = item.category;
+  const item = entries.find(e => e.id === id);
+  if (!item) return;
+
+  document.getElementById('editId').value = item.id;
+  document.getElementById('entryDate').value = item.date;
+  if (categories.some(c => c.key === item.category)) {
+    document.getElementById('entryCategory').value = item.category;
+  }
+  document.getElementById('entryAmount').value = item.amount;
+  document.getElementById('entryNote').value = item.note || '';
+
+  document.getElementById('formTitle').textContent = 'Edit Entry';
+  document.getElementById('submitBtn').textContent = 'Save Changes';
+  document.getElementById('cancelEditBtn').style.display = 'inline-block';
+  document.getElementById('entryForm').scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
-document.getElementById('entryAmount').value = item.amount;
-document.getElementById('entryNote').value = item.note || '';
-document.getElementById('formTitle').textContent = 'Edit Entry';
-document.getElementById('submitBtn').textContent = 'Save Changes';
-document.getElementById('cancelEditBtn').style.display = 'inline-block';
-document.getElementById('entryAmount').focus();
-}
+
 function deleteEntry(id) {
-if (!confirm('Delete this spending entry?')) return;
-entries = entries.filter(e => e.id !== id);
-if (Number(document.getElementById('editId').value) === id) {
-resetForm();
+  if (!confirm('Delete this spending entry?')) return;
+  entries = entries.filter(e => e.id !== id);
+  if (Number(document.getElementById('editId').value) === id) {
+    resetForm();
+  }
+  saveState();
+  render();
 }
-saveState();
-render();
-}
+
 function resetForm() {
-document.getElementById('entryForm').reset();
-document.getElementById('editId').value = '';
-document.getElementById('entryDate').value = getTodayString();
-document.getElementById('formTitle').textContent = 'Add New Spending Entry';
-document.getElementById('submitBtn').textContent = 'Add Entry';
-document.getElementById('cancelEditBtn').style.display = 'none';
+  document.getElementById('entryForm').reset();
+  document.getElementById('editId').value = '';
+  document.getElementById('entryDate').value = getTodayString();
+  document.getElementById('formTitle').textContent = 'Add New Spending Entry';
+  document.getElementById('submitBtn').textContent = 'Add Entry';
+  document.getElementById('cancelEditBtn').style.display = 'none';
 }
+
 function exportData() {
-const data = JSON.stringify({ categories, entries, limits }, null, 2);
-const blob = new Blob([data], { type: 'application/json' });
-const url = URL.createObjectURL(blob);
-const a = document.createElement('a');
-a.href = url;
-a.download = spending-backup-${getTodayString()}.json;
-a.click();
-URL.revokeObjectURL(url);
+  const data = JSON.stringify({ categories, entries, limits }, null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `spending-backup-${getTodayString()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
+
 function importData(event) {
-const file = event.target.files[0];
-if (!file) return;
-const reader = new FileReader();
-reader.onload = function(e) {
-try {
-const parsed = JSON.parse(e.target.result);
-if (Array.isArray(parsed.categories) && parsed.categories.length > 0) {
-categories = parsed.categories;
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      if (Array.isArray(parsed.categories) && parsed.categories.length > 0) {
+        categories = parsed.categories;
+      }
+      if (Array.isArray(parsed.entries)) entries = parsed.entries;
+      if (parsed.limits) limits = parsed.limits;
+      syncLimitsStructure();
+      saveState();
+      render();
+      alert('Backup restored!');
+    } catch {
+      alert('Invalid backup file.');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
 }
-if (Array.isArray(parsed.entries)) entries = parsed.entries;
-if (parsed.limits) limits = parsed.limits;
-syncLimitsStructure();
-saveState();
-render();
-alert('Backup restored!');
-} catch {
-alert('Invalid backup file.');
-}
-};
-reader.readAsText(file);
-event.target.value = '';
-}
+
 function render() {
-renderCategorySelects();
-renderSummary();
-renderLog();
+  renderCategorySelects();
+  renderSummary();
+  renderLog();
 }
+
 render();
