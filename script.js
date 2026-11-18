@@ -100,7 +100,6 @@ function getPeriodLabels(now) {
     year: yearStr
   };
 }
-
 function updateLogPeriodDropdown() {
   const labels = getPeriodLabels(new Date());
   const filterPeriod = document.getElementById('filterPeriod');
@@ -163,6 +162,7 @@ function updateLimit(catKey, period, value) {
   saveState();
   renderSummary();
 }
+
 function handleAddCategory(e) {
   if (e) e.preventDefault();
   const nameInput = document.getElementById('newCatName');
@@ -246,7 +246,6 @@ function renderCategorySelects() {
     </div>
   `).join('');
 }
-
 function renderSummary() {
   const now = new Date();
   const labels = getPeriodLabels(now);
@@ -439,48 +438,52 @@ function deleteEntry(id) {
 function resetForm() {
   document.getElementById('entryForm').reset();
   document.getElementById('editId').value = '';
-document.getElementById('entryDate').value = getTodayString();
-document.getElementById('formTitle').textContent = 'Add New Spending Entry';
-document.getElementById('submitBtn').textContent = 'Add Entry';
-document.getElementById('cancelEditBtn').style.display = 'none';
+  document.getElementById('entryDate').value = getTodayString();
+  document.getElementById('formTitle').textContent = 'Add New Spending Entry';
+  document.getElementById('submitBtn').textContent = 'Add Entry';
+  document.getElementById('cancelEditBtn').style.display = 'none';
 }
+
 function exportData() {
-const data = JSON.stringify({ categories, entries, limits }, null, 2);
-const blob = new Blob([data], { type: 'application/json' });
-const url = URL.createObjectURL(blob);
-const a = document.createElement('a');
-a.href = url;
-a.download = spending-backup-${getTodayString()}.json;
-a.click();
-URL.revokeObjectURL(url);
+  const data = JSON.stringify({ categories, entries, limits }, null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `spending-backup-${getTodayString()}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
+
 function importData(event) {
-const file = event.target.files[0];
-if (!file) return;
-const reader = new FileReader();
-reader.onload = function(e) {
-try {
-const parsed = JSON.parse(e.target.result);
-if (Array.isArray(parsed.categories) && parsed.categories.length > 0) {
-categories = parsed.categories;
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      if (Array.isArray(parsed.categories) && parsed.categories.length > 0) {
+        categories = parsed.categories;
+      }
+      if (Array.isArray(parsed.entries)) entries = parsed.entries;
+      if (parsed.limits && typeof parsed.limits === 'object') limits = parsed.limits;
+      syncLimitsStructure();
+      saveState();
+      render();
+      alert('Backup restored!');
+    } catch {
+      alert('Invalid backup file.');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
 }
-if (Array.isArray(parsed.entries)) entries = parsed.entries;
-if (parsed.limits && typeof parsed.limits === 'object') limits = parsed.limits;
-syncLimitsStructure();
-saveState();
-render();
-alert('Backup restored!');
-} catch {
-alert('Invalid backup file.');
-}
-};
-reader.readAsText(file);
-event.target.value = '';
-}
+
 function render() {
-updateLogPeriodDropdown();
-renderCategorySelects();
-renderSummary();
-renderLog();
+  updateLogPeriodDropdown();
+  renderCategorySelects();
+  renderSummary();
+  renderLog();
 }
+
 render();
