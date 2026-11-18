@@ -10,9 +10,30 @@ const DEFAULT_CATEGORIES = [
 
 const COLOR_PALETTE = ['#a855f7', '#f472b6', '#fb7185', '#2dd4bf', '#818cf8', '#f97316', '#34d399'];
 
-let categories = JSON.parse(localStorage.getItem(STORAGE_CATEGORIES)) || DEFAULT_CATEGORIES;
-let entries = JSON.parse(localStorage.getItem(STORAGE_ENTRIES)) || [];
-let limits = JSON.parse(localStorage.getItem(STORAGE_LIMITS)) || {};
+function loadFromStorage(key, fallback) {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return fallback;
+    const parsed = JSON.parse(raw);
+    return parsed !== null && parsed !== undefined ? parsed : fallback;
+  } catch (err) {
+    console.warn('Storage read failed for', key, err);
+    return fallback;
+  }
+}
+
+let categories = loadFromStorage(STORAGE_CATEGORIES, null);
+if (!Array.isArray(categories) || categories.length === 0) {
+  categories = [...DEFAULT_CATEGORIES];
+}
+
+let entries = loadFromStorage(STORAGE_ENTRIES, []);
+if (!Array.isArray(entries)) entries = [];
+
+let limits = loadFromStorage(STORAGE_LIMITS, {});
+if (typeof limits !== 'object' || limits === null || Array.isArray(limits)) {
+  limits = {};
+}
 
 function syncLimitsStructure() {
   categories.forEach(cat => {
@@ -21,7 +42,19 @@ function syncLimitsStructure() {
     }
   });
 }
+
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_CATEGORIES, JSON.stringify(categories));
+    localStorage.setItem(STORAGE_ENTRIES, JSON.stringify(entries));
+    localStorage.setItem(STORAGE_LIMITS, JSON.stringify(limits));
+  } catch (err) {
+    alert('Could not save to browser storage. Make sure Private Browsing is turned off.');
+  }
+}
+
 syncLimitsStructure();
+saveState();
 
 function getTodayString() {
   const now = new Date();
@@ -30,12 +63,6 @@ function getTodayString() {
 }
 
 document.getElementById('entryDate').value = getTodayString();
-
-function saveState() {
-  localStorage.setItem(STORAGE_CATEGORIES, JSON.stringify(categories));
-  localStorage.setItem(STORAGE_ENTRIES, JSON.stringify(entries));
-  localStorage.setItem(STORAGE_LIMITS, JSON.stringify(limits));
-}
 
 function parseLocalDate(dateStr) {
   const [y, m, d] = dateStr.split('-').map(Number);
@@ -111,11 +138,11 @@ document.getElementById('categoryForm').addEventListener('submit', function(e) {
   categories.push({ key, label, color });
   limits[key] = { week: 0, month: 0, year: 0 };
 
+  saveState();
   colorInput.value = COLOR_PALETTE[categories.length % COLOR_PALETTE.length];
   nameInput.value = '';
-
-  saveState();
   render();
+  document.getElementById('entryCategory').value = key;
 });
 
 function deleteCategory(catKey) {
@@ -127,7 +154,7 @@ function deleteCategory(catKey) {
   const cat = categories.find(c => c.key === catKey);
   const count = entries.filter(e => e.category === catKey).length;
   const msg = count > 0
-    ? `Delete "${cat.label}"? It has ${count} existing log entr${count === 1 ? 'y' : 'ies'}. Those entries will remain in your log as "(Deleted)" unless you delete them.`
+    ? `Delete "${cat.label}"? It has ${count} existing log entr${count === 1 ? 'y' : 'ies'}. Those entries will stay in your log as "(Deleted)" unless you delete them.`
     : `Delete category "${cat.label}"?`;
 
   if (!confirm(msg)) return;
@@ -137,8 +164,6 @@ function deleteCategory(catKey) {
   saveState();
   render();
 }
-
-
 function renderCategorySelects() {
   const entrySelect = document.getElementById('entryCategory');
   const filterSelect = document.getElementById('filterCategory');
@@ -184,13 +209,13 @@ function renderSummary() {
       if (e.category !== cat.key) return;
       const d = parseLocalDate(e.date);
       if (isSameYear(d, now)) {
-        yearTotal += e.amount;
+        yearTotal += Number(e.amount) || 0;
         if (isSameMonth(d, now)) {
-          monthTotal += e.amount;
+          monthTotal += Number(e.amount) || 0;
         }
       }
       if (isSameWeek(d, now)) {
-        weekTotal += e.amount;
+        weekTotal += Number(e.amount) || 0;
       }
     });
 
@@ -263,7 +288,7 @@ function renderLog() {
     })
     .sort((a, b) => b.date.localeCompare(a.date) || b.id - a.id);
 
-  const totalFiltered = filtered.reduce((sum, e) => sum + e.amount, 0);
+  const totalFiltered = filtered.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
   document.getElementById('filteredTotal').textContent = formatMoney(totalFiltered);
 
   const tbody = document.getElementById('logBody');
@@ -381,7 +406,7 @@ function importData(event) {
         categories = parsed.categories;
       }
       if (Array.isArray(parsed.entries)) entries = parsed.entries;
-      if (parsed.limits) limits = parsed.limits;
+      if (parsed.limits && typeof parsed.limits === 'object') limits = parsed.limits;
       syncLimitsStructure();
       saveState();
       render();
@@ -399,5 +424,13 @@ function render() {
   renderSummary();
   renderLog();
 }
+
+window.addEventListener('storage', function() {
+  categories = loadFromStorage(STORAGE_CATEGORIES, DEFAULT_CATEGORIES);
+  entries = loadFromStorage(STORAGE_ENTRIES, []);
+  limits = loadFromStorage(STORAGE_LIMITS, {});
+  syncLimitsStructure();
+  render();
+});
 
 render();
