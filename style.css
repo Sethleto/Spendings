@@ -44,12 +44,7 @@ header {
 header h1 { font-size: 1.45rem; }
 header p { color: var(--muted); font-size: 0.9rem; }
 
-.header-actions {
-  display: flex;
-  gap: 8px;
-  width: 100%;
-}
-
+.header-actions { display: flex; gap: 8px; width: 100%; }
 .header-actions button { flex: 1; }
 
 button {
@@ -68,27 +63,22 @@ button {
 .btn-secondary { background: var(--card); color: var(--text); border: 1px solid var(--border); }
 .btn-secondary:hover { background: var(--card-hover); }
 .btn-danger { background: #dc2626; color: #fff; padding: 6px 10px; font-size: 0.82rem; }
-.btn-danger:hover { background: #b91c1c; }
 .btn-edit { background: #475569; color: #fff; padding: 6px 10px; font-size: 0.82rem; }
-.btn-edit:hover { background: #64748b; }
 
 .btn-icon-del {
   background: transparent;
   color: var(--muted);
-  padding: 4px 8px;
+  padding: 4px 6px;
   font-size: 0.85rem;
-  border: 1px solid transparent;
+  border-radius: 6px;
+  flex-shrink: 0;
 }
-.btn-icon-del:hover {
-  color: #f87171;
-  border-color: rgba(248, 113, 113, 0.3);
-  background: rgba(239, 68, 68, 0.1);
-}
+.btn-icon-del:hover { color: #f87171; background: rgba(239, 68, 68, 0.12); }
 
-/* Summary Grid & Compact Single-Row Cards */
+/* Summary Grid */
 .summary-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
   gap: 14px;
 }
 
@@ -102,24 +92,21 @@ button {
   gap: 10px;
 }
 
+/* Single Line: Category Name + Month + Year + Delete */
 .cat-header {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: flex-start;
-  gap: 8px;
-}
-
-.cat-title-group {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
+  gap: 6px;
   min-width: 0;
 }
 
 .cat-header-left {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  min-width: 0;
+  flex: 1;
 }
 
 .cat-dot {
@@ -130,44 +117,40 @@ button {
 }
 
 .cat-header h2 {
-  font-size: 1.1rem;
+  font-size: 1rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* Inline Month & Year badges by category name */
 .cat-inline-totals {
   display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
 }
 
 .mini-stat {
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 6px;
+  padding: 2px 6px;
+  border-radius: 5px;
   background: rgba(15, 23, 42, 0.75);
   border: 1px solid var(--border);
   color: var(--muted);
+  white-space: nowrap;
 }
 
-.mini-stat strong {
-  color: var(--text);
-}
+.mini-stat strong { color: var(--text); }
 
 .mini-stat.over-limit {
   background: var(--danger-bg);
   border-color: var(--danger-border);
   color: var(--danger-text);
 }
+.mini-stat.over-limit strong { color: #f87171; }
 
-.mini-stat.over-limit strong {
-  color: #f87171;
-}
-
-/* Single Row Period Switcher + Spent + Limit */
+/* Row Underneath: Dropdown to choose Week / Month / Year + Amount + Limit */
 .single-period-row {
   display: flex;
   flex-wrap: wrap;
@@ -178,7 +161,6 @@ button {
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 8px 10px;
-  transition: 0.2s ease;
 }
 
 .single-period-row.over-limit {
@@ -188,9 +170,9 @@ button {
 }
 
 .period-select {
-  flex: 1 1 135px;
+  flex: 1 1 130px;
   min-height: 38px;
-  padding: 6px 28px 6px 8px;
+  padding: 6px 26px 6px 8px;
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 6px;
@@ -214,29 +196,23 @@ button {
 .row-metrics {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   margin-left: auto;
 }
 
-.spent-val {
-  font-size: 1.15rem;
-  font-weight: 700;
-}
-
-.single-period-row.over-limit .spent-val {
-  color: #f87171;
-}
+.spent-val { font-size: 1.1rem; font-weight: 700; }
+.single-period-row.over-limit .spent-val { color: #f87171; }
 
 .limit-control {
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   color: var(--muted);
 }
 
 .limit-control input {
-  width: 76px;
+  width: 72px;
   padding: 5px 6px;
   background: var(--bg);
   border: 1px solid var(--border);
@@ -254,7 +230,7 @@ button {
 .badge-over {
   background: #ef4444;
   color: #fff;
-  font-size: 0.68rem;
+  font-size: 0.65rem;
   font-weight: 700;
   padding: 2px 5px;
   border-radius: 4px;
@@ -269,10 +245,7 @@ button {
   padding: 16px;
 }
 
-.panel h3 {
-  margin-bottom: 14px;
-  font-size: 1.05rem;
-}
+.panel h3 { margin-bottom: 14px; font-size: 1.05rem; }
 
 form.entry-form {
   display: grid;
@@ -281,27 +254,12 @@ form.entry-form {
   align-items: end;
 }
 
-form.category-form {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  align-items: end;
-}
-
+form.category-form { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; }
 form.category-form .field { flex: 1 1 200px; }
 form.category-form .field-color { flex: 0 0 auto; }
 
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  min-width: 0;
-}
-
-.field label {
-  font-size: 0.82rem;
-  color: var(--muted);
-}
+.field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.field label { font-size: 0.82rem; color: var(--muted); }
 
 .field input,
 .field select,
@@ -366,14 +324,12 @@ form.category-form .field-color { flex: 0 0 auto; }
 
 .filters { display: flex; gap: 8px; width: 100%; }
 .filters select { flex: 1; }
-
 .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 
 table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
 th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--border); white-space: nowrap; }
 td:nth-child(3) { white-space: normal; min-width: 120px; }
 th { color: var(--muted); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; }
-tr:hover td { background: rgba(255, 255, 255, 0.02); }
 
 .cat-pill {
   display: inline-block;
